@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kaji Gauge — your AI agent quota, in the menu bar</title>
+<meta name="description" content="A native macOS menu-bar app showing your AI coding-agent quota — Claude and Codex — as warm ring gauges. Auto light/dark. MIT, open source. Nothing leaves your machine." />
+<meta property="og:title" content="Kaji Gauge" />
+<meta property="og:description" content="Your AI coding-agent quota, read straight off your machine and shown as warm ring gauges in the macOS menu bar." />
+<meta property="og:image" content="https://raw.githubusercontent.com/interesting-vibe-coding/kaji-gauge/main/docs/gauge-dark.png" />
+<meta name="theme-color" content="#161009" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    /* espresso ladder — warm darks, never black */
+    --espresso:#161009;
+    --hero-floor:#161009;
+    --suite-top:#161009;
+    --suite-bot:#1d150d;
+    --news-top:#1d150d;
+    --news-bot:#19110a;
+    --foot-top:#19110a;
+    --foot-bot:#120c07;
+
+    --cream:#ece3d4;
+    --cream-rgb:236 227 212;
+    --bronze:#cda86a;      /* metallic — hairlines, eyebrow labels */
+    --bronze-rgb:205 168 106;
+    --accent:#c2693c;      /* terracotta — links, italic accent word */
+    --accent-rgb:194 105 60;
+    --travertine:#efe9dc;  /* light product-window surface */
+
+    --maxw:1080px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--espresso);
+    color:var(--cream);
+    font-family:"Cormorant Garamond",Georgia,serif;
+    font-size:20px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+
+  /* site-wide gallery light — warm radial follows cursor */
+  #spotlight{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:1;
+    mix-blend-mode:soft-light;
+    background:radial-gradient(360px 360px at var(--mx,50%) var(--my,30%),
+      rgba(255,236,200,.30), rgba(255,236,200,0) 70%);
+    transition:opacity .6s ease;
+    opacity:0;
+  }
+
+  .mono{
+    font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:.72rem;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    font-weight:500;
+  }
+  .label{ color:var(--bronze); }
+
+  a{ color:var(--accent); text-decoration:none; }
+  a:hover{ text-decoration:underline; text-underline-offset:4px; text-decoration-thickness:1px; }
+
+  .wrap{ max-width:var(--maxw); margin:0 auto; padding:0 28px; position:relative; z-index:2; }
+
+  /* ---------- nav ---------- */
+  nav{
+    position:sticky; top:0; z-index:30;
+    background:var(--espresso);
+    border-bottom:1px solid rgb(var(--bronze-rgb)/.16);
+  }
+  nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:72px; }
+  .word{
+    font-size:1.4rem; font-weight:600; letter-spacing:.01em; color:var(--cream);
+  }
+  .word .g{ color:var(--bronze); font-style:italic; font-weight:500; }
+  .navlinks{ display:flex; gap:30px; align-items:center; }
+  .navlinks a{ color:var(--cream); font-size:1.05rem; }
+  .navlinks a:hover{ color:var(--accent); text-decoration:none; }
+  .navlinks .ghbtn{
+    border:1px solid rgb(var(--bronze-rgb)/.4);
+    padding:7px 18px; border-radius:2px; color:var(--cream);
+  }
+  .navlinks .ghbtn:hover{ border-color:var(--bronze); color:var(--bronze); }
+
+  /* ---------- hero ---------- */
+  header.hero{ position:relative; padding:110px 0 96px; }
+  header.hero::before{
+    content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
+    background:radial-gradient(60% 55% at 50% 38%,
+      rgba(205,168,106,.10), rgba(22,16,9,0) 70%);
+  }
+  .hero .wrap{ position:relative; z-index:2; text-align:center; }
+  .eyebrow{ display:inline-block; margin-bottom:30px; }
+  .eyebrow .label{ opacity:.9; }
+  h1{
+    font-size:clamp(3.2rem,8vw,6rem);
+    line-height:1.02; font-weight:500; letter-spacing:-.01em;
+    margin-bottom:24px;
+  }
+  h1 .it{ font-style:italic; color:var(--bronze); }
+  .slogan{
+    font-size:clamp(1.3rem,2.6vw,1.7rem);
+    color:rgb(var(--cream-rgb)/.82);
+    max-width:680px; margin:0 auto 22px; font-weight:400;
+  }
+  .subline{
+    font-size:1.05rem; color:rgb(var(--cream-rgb)/.55);
+    max-width:560px; margin:0 auto 46px; font-style:italic;
+  }
+
+  /* install CTA — light surface floating on dark */
+  .install{
+    max-width:680px; margin:0 auto;
+    background:var(--travertine);
+    border-radius:8px;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,.65), 0 4px 14px rgba(0,0,0,.4);
+    overflow:hidden;
+    text-align:left;
+  }
+  .install .ihead{
+    display:flex; align-items:center; gap:8px;
+    padding:12px 18px;
+    border-bottom:1px solid rgba(60,42,24,.14);
+  }
+  .dot{ width:11px; height:11px; border-radius:50%; display:inline-block; }
+  .dot.r{ background:#d8755e; } .dot.y{ background:#d7b566; } .dot.g{ background:#9fb07f; }
+  .ihead .ititle{
+    margin-left:8px; color:#7a634a; font-size:.7rem; letter-spacing:.18em;
+    text-transform:uppercase; font-family:"IBM Plex Mono",monospace;
+  }
+  .install .cmdrow{
+    display:flex; align-items:stretch; justify-content:space-between; gap:12px;
+    padding:20px 22px;
+  }
+  .cmd{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.92rem; line-height:1.5; color:#2a2018;
+    word-break:break-all; flex:1; align-self:center;
+  }
+  .cmd .pr{ color:#b0855a; }
+  .copybtn{
+    flex:0 0 auto; align-self:center;
+    background:var(--espresso); color:var(--cream);
+    border:none; border-radius:3px;
+    font-family:"IBM Plex Mono",monospace;
+    font-size:.7rem; letter-spacing:.16em; text-transform:uppercase;
+    padding:11px 18px; cursor:pointer;
+    transition:background .25s ease, color .25s ease;
+  }
+  .copybtn:hover{ background:#221811; color:var(--bronze); }
+  .copybtn.copied{ color:var(--bronze); }
+  .ctahint{
+    margin-top:18px; font-size:.95rem; color:rgb(var(--cream-rgb)/.5);
+    font-style:italic; text-align:center;
+  }
+  .ctahint a{ font-style:normal; }
+
+  /* ---------- generic section ---------- */
+  section{ position:relative; padding:96px 0; }
+  .sec-head{ text-align:center; margin-bottom:64px; }
+  .sec-head .label{ display:block; margin-bottom:18px; }
+  h2{
+    font-size:clamp(2.2rem,5vw,3.4rem); font-weight:500; line-height:1.08;
+    letter-spacing:-.01em;
+  }
+  h2 .it{ font-style:italic; color:var(--bronze); }
+  .lede{
+    max-width:620px; margin:18px auto 0; font-size:1.2rem;
+    color:rgb(var(--cream-rgb)/.7);
+  }
+
+  /* matched-seam ladder */
+  .suite{ background:linear-gradient(to bottom,var(--suite-top),var(--suite-bot)); }
+  .shots{ background:linear-gradient(to bottom,var(--suite-bot),var(--news-top)); }
+  .why{ background:linear-gradient(to bottom,var(--news-top),var(--news-bot)); }
+
+  /* ---------- what it shows: feature grid ---------- */
+  .grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+    background:rgb(var(--bronze-rgb)/.16);
+    border:1px solid rgb(var(--bronze-rgb)/.16);
+    border-radius:4px; overflow:hidden;
+  }
+  .cell{
+    background:var(--suite-top);
+    padding:38px 32px;
+  }
+  .suite .cell{ background:linear-gradient(to bottom,var(--suite-top),var(--suite-bot)); }
+  .cell .n{ display:block; color:var(--bronze); margin-bottom:18px; }
+  .cell h3{
+    font-size:1.55rem; font-weight:500; margin-bottom:10px; line-height:1.15;
+  }
+  .cell h3 .it{ font-style:italic; color:var(--bronze); }
+  .cell p{ font-size:1.05rem; color:rgb(var(--cream-rgb)/.66); }
+
+  /* ---------- screenshots ---------- */
+  .shotgrid{
+    display:grid; grid-template-columns:1fr 1fr; gap:36px; align-items:start;
+  }
+  figure.shot{ margin:0; text-align:center; }
+  figure.shot .frame{
+    background:var(--travertine);
+    border-radius:10px; padding:14px;
+    box-shadow:0 34px 80px -24px rgba(0,0,0,.7), 0 6px 18px rgba(0,0,0,.4);
+  }
+  figure.shot.dark .frame{ background:#0f0a06; border:1px solid rgb(var(--bronze-rgb)/.22); }
+  figure.shot img{ display:block; width:100%; height:auto; border-radius:5px; }
+  figure.shot figcaption{
+    margin-top:18px; color:var(--bronze);
+    font-family:"IBM Plex Mono",monospace; font-size:.7rem;
+    letter-spacing:.2em; text-transform:uppercase;
+  }
+  figure.shot figcaption span{ display:block; margin-top:6px;
+    font-family:"Cormorant Garamond",serif; font-size:1.05rem;
+    letter-spacing:0; text-transform:none; color:rgb(var(--cream-rgb)/.6); font-style:italic; }
+
+  /* ---------- why / how it works ---------- */
+  .why-cols{
+    display:grid; grid-template-columns:1.1fr .9fr; gap:64px; align-items:center;
+  }
+  .why-cols .prose p{ font-size:1.18rem; color:rgb(var(--cream-rgb)/.8); margin-bottom:20px; }
+  .why-cols .prose p .it{ font-style:italic; color:var(--bronze); }
+  .flow{ list-style:none; counter-reset:step; }
+  .flow li{
+    counter-increment:step;
+    position:relative; padding:20px 0 20px 56px;
+    border-bottom:1px solid rgb(var(--bronze-rgb)/.14);
+  }
+  .flow li:last-child{ border-bottom:none; }
+  .flow li::before{
+    content:counter(step,decimal-leading-zero);
+    position:absolute; left:0; top:20px;
+    font-family:"IBM Plex Mono",monospace; font-size:.78rem;
+    color:var(--bronze); letter-spacing:.1em;
+    border:1px solid rgb(var(--bronze-rgb)/.4);
+    width:34px; height:34px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .flow li b{ font-weight:600; color:var(--cream); }
+  .flow li p{ font-size:1.02rem; color:rgb(var(--cream-rgb)/.62); margin-top:3px; }
+  .privacy{
+    margin-top:34px; padding:22px 26px;
+    border:1px solid rgb(var(--bronze-rgb)/.3);
+    border-radius:4px;
+    background:rgb(var(--bronze-rgb)/.04);
+    font-style:italic; font-size:1.12rem; color:rgb(var(--cream-rgb)/.85);
+  }
+  .privacy b{ font-style:normal; color:var(--bronze); }
+
+  /* ---------- final cta ---------- */
+  .finalcta{ text-align:center; }
+  .finalcta .install{ margin-top:44px; }
+
+  /* ---------- footer ---------- */
+  footer{
+    background:linear-gradient(to bottom,var(--foot-top),var(--foot-bot));
+    border-top:1px solid rgb(var(--bronze-rgb)/.16);
+    padding:64px 0 56px;
+  }
+  footer .wrap{ display:flex; flex-direction:column; align-items:center; text-align:center; gap:18px; }
+  footer .word{ font-size:1.7rem; }
+  footer .flinks{ display:flex; gap:26px; flex-wrap:wrap; justify-content:center; }
+  footer .flinks a{ color:var(--cream); }
+  footer .flinks a:hover{ color:var(--accent); text-decoration:none; }
+  footer .fine{
+    font-family:"IBM Plex Mono",monospace; font-size:.66rem;
+    letter-spacing:.18em; text-transform:uppercase;
+    color:rgb(var(--cream-rgb)/.42); margin-top:6px;
+  }
+  footer .made{ font-style:italic; color:rgb(var(--cream-rgb)/.55); font-size:1.02rem; }
+  footer .made a{ color:var(--bronze); }
+  footer .made a:hover{ color:var(--accent); }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:860px){
+    .navlinks{ gap:18px; }
+    .navlinks .nlink{ display:none; }
+    .grid{ grid-template-columns:1fr; }
+    .shotgrid{ grid-template-columns:1fr; gap:48px; }
+    .why-cols{ grid-template-columns:1fr; gap:44px; }
+    .install .cmdrow{ flex-direction:column; align-items:stretch; }
+    .copybtn{ align-self:flex-start; }
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{ scroll-behavior:auto; }
+    #spotlight{ display:none; }
+  }
+</style>
+</head>
+<body>
+<div id="spotlight"></div>
+
+<nav>
+  <div class="wrap">
+    <a href="#top" class="word">Kaji <span class="g">Gauge</span></a>
+    <div class="navlinks">
+      <a class="nlink" href="#shows">What it shows</a>
+      <a class="nlink" href="#screens">Screenshots</a>
+      <a class="nlink" href="#why">How it works</a>
+      <a class="ghbtn" href="https://github.com/interesting-vibe-coding/kaji-gauge" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <span class="eyebrow"><span class="mono label">Native macOS · menu bar · open source</span></span>
+    <h1>Know what's <span class="it">left</span>.</h1>
+    <p class="slogan">Your AI coding-agent quota — Claude and Codex — as warm ring gauges in the menu bar and a floating desktop panel.</p>
+    <p class="subline">Auto light and dark · English &amp; 中文 · read straight off your machine. Nothing leaves it.</p>
+
+    <div class="install">
+      <div class="ihead">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="ititle">install — one line</span>
+      </div>
+      <div class="cmdrow">
+        <code class="cmd" id="cmd"><span class="pr">$ </span>curl -fsSL https://raw.githubusercontent.com/interesting-vibe-coding/kaji-gauge/main/install.sh | bash</code>
+        <button class="copybtn" id="copy" aria-label="Copy install command">Copy</button>
+      </div>
+    </div>
+    <p class="ctahint">macOS 13+. MIT-licensed. Read the script first if you like — it's on <a href="https://github.com/interesting-vibe-coding/kaji-gauge" target="_blank" rel="noopener">GitHub</a>.</p>
+  </div>
+</header>
+
+<!-- WHAT IT SHOWS -->
+<section class="suite" id="shows">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="mono label">What it shows</span>
+      <h2>Two agents, <span class="it">one glance</span>.</h2>
+      <p class="lede">A quiet ring for each provider. Bronze fills as you spend, so you feel the budget before you hit the wall.</p>
+    </div>
+    <div class="grid">
+      <div class="cell">
+        <span class="mono n">01</span>
+        <h3>Two <span class="it">windows</span></h3>
+        <p>One concentric ring per agent — the outer arc your 5-hour window, the inner your 7-day. Both limits in a single glance. No login, no API call.</p>
+      </div>
+      <div class="cell">
+        <span class="mono n">02</span>
+        <h3>Reset <span class="it">countdowns</span></h3>
+        <p>Click for the full reading: how long until each window resets, for both Claude and Codex. Know when the well refills.</p>
+      </div>
+      <div class="cell">
+        <span class="mono n">03</span>
+        <h3>In the <span class="it">menu bar</span></h3>
+        <p>A compact double ring with the live % in the middle. Show one provider or both. Otherwise it just sits there, calm.</p>
+      </div>
+      <div class="cell">
+        <span class="mono n">04</span>
+        <h3>Floating <span class="it">panel</span></h3>
+        <p>An optional desktop panel with the larger rings — keep it in a corner while you work, drag it where you like.</p>
+      </div>
+      <div class="cell">
+        <span class="mono n">05</span>
+        <h3>Auto <span class="it">light / dark</span></h3>
+        <p>Follows the system appearance. Warm on the espresso of dark mode, restrained on the paper of light.</p>
+      </div>
+      <div class="cell">
+        <span class="mono n">06</span>
+        <h3>Quiet by <span class="it">design</span></h3>
+        <p>No badges, no streaks, no nudges. Information when you look, silence when you don't.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCREENSHOTS -->
+<section class="shots" id="screens">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="mono label">Screenshots</span>
+      <h2>Light, then <span class="it">dark</span>.</h2>
+      <p class="lede">The same gauges in both appearances. They change tone; they never change their manners.</p>
+    </div>
+    <div class="shotgrid">
+      <figure class="shot light">
+        <div class="frame">
+          <img src="https://raw.githubusercontent.com/interesting-vibe-coding/kaji-gauge/main/docs/gauge-light.png" alt="Kaji Gauge rings in macOS light mode" loading="lazy" />
+        </div>
+        <figcaption>Light mode<span>Restrained on paper.</span></figcaption>
+      </figure>
+      <figure class="shot dark">
+        <div class="frame">
+          <img src="https://raw.githubusercontent.com/interesting-vibe-coding/kaji-gauge/main/docs/gauge-dark.png" alt="Kaji Gauge rings in macOS dark mode" loading="lazy" />
+        </div>
+        <figcaption>Dark mode<span>Warm on espresso.</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- WHY / HOW IT WORKS -->
+<section class="why" id="why">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="mono label">Why · How it works</span>
+      <h2>It reads your machine, <span class="it">and stops there</span>.</h2>
+    </div>
+    <div class="why-cols">
+      <div class="prose">
+        <p>You already pay for these agents. The quota lives in plain files on your own disk — you just can't <span class="it">see</span> it while you work.</p>
+        <p>Kaji Gauge fixes only that. A small, dependency-free Python reader parses the local Claude and Codex usage files and hands the numbers to the gauge. That's the whole machine.</p>
+        <div class="privacy">
+          <b>Nothing leaves your machine.</b> No account, no telemetry, no network call. Local files in, rings out.
+        </div>
+      </div>
+      <div>
+        <ul class="flow">
+          <li>
+            <b>Read</b>
+            <p>A bundled Python reader — no pip, no dependencies — opens the local Claude and Codex usage files.</p>
+          </li>
+          <li>
+            <b>Parse</b>
+            <p>It works out what's used and what's left for each provider, on the spot.</p>
+          </li>
+          <li>
+            <b>Draw</b>
+            <p>The native app renders a warm ring per agent in the menu bar and the floating panel.</p>
+          </li>
+          <li>
+            <b>Refresh</b>
+            <p>It re-reads on its own, quietly, so the rings stay honest while you keep coding.</p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="finalcta">
+  <div class="wrap">
+    <div class="sec-head" style="margin-bottom:0">
+      <span class="mono label">Install</span>
+      <h2>One line, and it's <span class="it">on your bar</span>.</h2>
+    </div>
+    <div class="install">
+      <div class="ihead">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="ititle">install — one line</span>
+      </div>
+      <div class="cmdrow">
+        <code class="cmd" id="cmd2"><span class="pr">$ </span>curl -fsSL https://raw.githubusercontent.com/interesting-vibe-coding/kaji-gauge/main/install.sh | bash</code>
+        <button class="copybtn" id="copy2" aria-label="Copy install command">Copy</button>
+      </div>
+    </div>
+    <p class="ctahint">Prefer to build from source? Everything is on <a href="https://github.com/interesting-vibe-coding/kaji-gauge" target="_blank" rel="noopener">GitHub</a>.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <a href="#top" class="word">Kaji <span class="g">Gauge</span></a>
+    <p class="made">Do a bit · 做一点 — by <a href="https://doabit.dev" target="_blank" rel="noopener">Bubu</a>.</p>
+    <div class="flinks">
+      <a href="https://github.com/interesting-vibe-coding/kaji-gauge" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/interesting-vibe-coding/kaji-gauge/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+      <a href="https://doabit.dev" target="_blank" rel="noopener">doabit.dev</a>
+    </div>
+    <p class="fine">© 2026 · Open source · MIT</p>
+  </div>
+</footer>
+
+<script>
+  // The exact install one-liner, copied verbatim.
+  var ONELINER = "curl -fsSL https://raw.githubusercontent.com/interesting-vibe-coding/kaji-gauge/main/install.sh | bash";
+
+  function wireCopy(btnId){
+    var btn = document.getElementById(btnId);
+    if(!btn) return;
+    btn.addEventListener("click", function(){
+      var done = function(){
+        var prev = btn.textContent;
+        btn.textContent = "Copied";
+        btn.classList.add("copied");
+        setTimeout(function(){ btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(ONELINER).then(done, function(){ fallback(); });
+      } else {
+        fallback();
+      }
+      function fallback(){
+        var ta = document.createElement("textarea");
+        ta.value = ONELINER;
+        ta.setAttribute("readonly","");
+        ta.style.position = "absolute";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); done(); } catch(e){}
+        document.body.removeChild(ta);
+      }
+    });
+  }
+  wireCopy("copy");
+  wireCopy("copy2");
+
+  // Site-wide gallery light — warm radial follows the cursor.
+  (function(){
+    var sl = document.getElementById("spotlight");
+    if(!sl) return;
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(reduce) return;
+    window.addEventListener("pointermove", function(e){
+      sl.style.setProperty("--mx", e.clientX + "px");
+      sl.style.setProperty("--my", e.clientY + "px");
+      sl.style.opacity = "1";
+    }, {passive:true});
+    window.addEventListener("pointerleave", function(){ sl.style.opacity = "0"; });
+  })();
+</script>
+</body>
+</html>
