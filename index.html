@@ -3,141 +3,121 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Kaji Gauge — your AI agent quota, in the menu bar</title>
-<meta name="description" content="A native macOS menu-bar app that shows your Claude and Codex coding-agent quota as warm ring gauges. Auto light/dark, MIT, open source. Nothing leaves your machine." />
+<title>Kaji Gauge — your AI usage, in the macOS menu bar</title>
+<meta name="description" content="A beautiful native macOS menu-bar app that shows your Claude, Codex, MiniMax and Ark usage as warm ring gauges. Menu bar, floating panel, foldable dock. Auto light/dark, MIT, read locally — nothing leaves your machine." />
 <meta property="og:title" content="Kaji Gauge" />
-<meta property="og:description" content="Your AI coding-agent quota — Claude and Codex — as warm ring gauges in the macOS menu bar." />
-<meta property="og:image" content="https://raw.githubusercontent.com/interesting-vibe-coding/kaji-gauge/main/docs/gauge-dark.png" />
-<meta name="theme-color" content="#16100B" />
+<meta property="og:description" content="Your AI usage — Claude · Codex · MiniMax · Ark — as warm ring gauges in the macOS menu bar." />
+<meta property="og:image" content="https://raw.githubusercontent.com/interesting-vibe-coding/kaji-gauge/main/docs/hero.png" />
+<meta name="theme-color" content="#FFF6EC" />
 <meta name="twitter:card" content="summary_large_image" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2316100B'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23F25C05' stroke-width='8'/%3E%3Cline x1='50' y1='50' x2='78' y2='22' stroke='%2316100B' stroke-width='13' stroke-linecap='round'/%3E%3Cline x1='50' y1='50' x2='78' y2='22' stroke='%23F25C05' stroke-width='8' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%23F25C05'/%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23FFF3E8'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23ECE2D0' stroke-width='8'/%3E%3Ccircle cx='50' cy='50' r='30' fill='none' stroke='%23F25C05' stroke-width='8' stroke-linecap='round' stroke-dasharray='130 188' transform='rotate(-90 50 50)'/%3E%3Ccircle cx='50' cy='50' r='5' fill='%23F25C05'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --ink:#16100B; --ink-3:#120c07;
-    --cream:#ECE4D6; --cream-rgb:236 228 214;
+    --ink:#2B2620; --ink2:#6E6253; --mute:#9A8C79;
     --persimmon:#F25C05; --persimmon-rgb:242 92 5;
-    --gold:#D8A657; --gold-rgb:216 166 87;
-    --track:#3A3026; --track-rgb:58 48 38;
+    --persimmon-soft:#FF7A2E;
+    --paper:#FFFDF9; --line:#EADFCB;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
   body{
-    background:var(--ink); color:var(--cream);
+    color:var(--ink);
     font-family:"Inter",system-ui,-apple-system,sans-serif;
     font-size:17px; line-height:1.6;
     -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
-    overflow-x:hidden;
-    min-height:100vh; display:flex; flex-direction:column;
+    overflow-x:hidden; min-height:100vh; display:flex; flex-direction:column;
+    background:
+      radial-gradient(1100px 640px at 82% 8%, rgb(var(--persimmon-rgb)/.14), transparent 60%),
+      radial-gradient(820px 560px at 6% 96%, rgba(255,122,46,.10), transparent 62%),
+      linear-gradient(160deg,#FFFFFF 0%, #FFF6EC 50%, #FFEAD6 100%);
+    background-attachment:fixed;
   }
-  .wrap{ max-width:880px; margin:0 auto; padding:0 24px; position:relative; z-index:2; }
+  .wrap{ max-width:980px; margin:0 auto; padding:0 24px; position:relative; z-index:2; }
   a{ color:var(--persimmon); text-decoration:none; }
   a:hover{ text-decoration:underline; text-underline-offset:3px; }
   .eyebrow{
     font-family:"IBM Plex Mono",monospace; font-size:.72rem;
-    letter-spacing:.22em; text-transform:uppercase; font-weight:500; color:var(--gold);
+    letter-spacing:.22em; text-transform:uppercase; font-weight:500; color:var(--persimmon);
   }
 
   /* nav */
-  nav{ border-bottom:1px solid rgb(var(--track-rgb)/.6); }
+  nav{ border-bottom:1px solid rgb(var(--persimmon-rgb)/.12); }
   nav .wrap{ display:flex; align-items:center; justify-content:space-between; height:62px; }
   .brand{ display:flex; align-items:center; gap:11px; }
-  .brand svg{ width:25px; height:25px; display:block; }
-  .brand .name{ font-weight:600; font-size:1.04rem; color:var(--cream); letter-spacing:-.01em; }
-  .brand .name b{ color:var(--gold); font-weight:600; }
+  .brand svg{ width:26px; height:26px; display:block; }
+  .brand .name{ font-weight:600; font-size:1.05rem; color:var(--ink); letter-spacing:-.01em; }
+  .brand .name b{ color:var(--persimmon); font-weight:700; }
   .gh{
     display:inline-flex; align-items:center; gap:8px;
-    border:1px solid rgb(var(--gold-rgb)/.32); color:var(--cream);
-    background:rgb(var(--track-rgb)/.35); padding:8px 14px; border-radius:8px; font-size:.92rem;
+    border:1px solid rgb(var(--persimmon-rgb)/.28); color:var(--ink);
+    background:rgba(255,255,255,.7); padding:8px 14px; border-radius:9px; font-size:.92rem;
   }
-  .gh:hover{ border-color:rgb(var(--persimmon-rgb)/.7); background:rgb(var(--track-rgb)/.6); text-decoration:none; }
+  .gh:hover{ border-color:rgb(var(--persimmon-rgb)/.7); background:#fff; text-decoration:none; }
   .gh svg{ width:16px; height:16px; fill:currentColor; }
 
   /* hero */
   main{ flex:1 0 auto; }
-  header.hero{ position:relative; padding:88px 0 72px; text-align:center; overflow:hidden; }
-  header.hero::before{
-    content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
-    background:
-      radial-gradient(46% 40% at 50% 14%, rgb(var(--persimmon-rgb)/.17), transparent 70%),
-      radial-gradient(62% 50% at 50% 28%, rgb(var(--gold-rgb)/.09), transparent 72%);
-  }
+  header.hero{ position:relative; padding:74px 0 60px; text-align:center; }
   .hero .wrap{ position:relative; z-index:2; }
   h1{
-    font-size:clamp(2.6rem,6.4vw,4.4rem); line-height:1.04; font-weight:700;
-    letter-spacing:-.025em; margin:20px auto 18px; max-width:13ch;
+    font-size:clamp(2.5rem,6vw,4.1rem); line-height:1.05; font-weight:700;
+    letter-spacing:-.025em; margin:18px auto 16px; max-width:16ch;
   }
   h1 .hl{ color:var(--persimmon); }
   .lead{
-    font-size:clamp(1.05rem,2.3vw,1.32rem); color:rgb(var(--cream-rgb)/.78);
-    max-width:560px; margin:0 auto 38px; font-weight:400;
+    font-size:clamp(1.05rem,2.2vw,1.3rem); color:var(--ink2);
+    max-width:600px; margin:0 auto 14px; font-weight:400;
   }
-  .lead b{ color:var(--gold); font-weight:500; }
+  .lead b{ color:var(--ink); font-weight:600; }
+  .leadzh{ font-size:1rem; color:var(--mute); max-width:560px; margin:0 auto 34px; }
 
   /* install */
   .install{
-    max-width:620px; margin:0 auto;
-    background:rgb(18 12 7 / .9); border:1px solid rgb(var(--track-rgb)/.9);
-    border-radius:12px; overflow:hidden; text-align:left;
-    box-shadow:0 24px 60px -24px rgba(0,0,0,.7);
+    max-width:640px; margin:0 auto;
+    background:var(--paper); border:1px solid var(--line);
+    border-radius:13px; overflow:hidden; text-align:left;
+    box-shadow:0 22px 50px -26px rgba(120,60,10,.40);
   }
-  .ihead{ display:flex; align-items:center; gap:7px; padding:11px 16px; border-bottom:1px solid rgb(var(--track-rgb)/.7); }
+  .ihead{ display:flex; align-items:center; gap:7px; padding:11px 16px; border-bottom:1px solid var(--line); }
   .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
-  .dot.r{ background:var(--persimmon); } .dot.y{ background:var(--gold); } .dot.g{ background:#7f8b5a; }
-  .ititle{ margin-left:6px; color:rgb(var(--cream-rgb)/.45); font-size:.64rem; letter-spacing:.18em; text-transform:uppercase; font-family:"IBM Plex Mono",monospace; }
+  .dot.r{ background:var(--persimmon); } .dot.y{ background:#E9B44C; } .dot.g{ background:#9DBE6A; }
+  .ititle{ margin-left:6px; color:var(--mute); font-size:.64rem; letter-spacing:.18em; text-transform:uppercase; font-family:"IBM Plex Mono",monospace; }
   .cmdrow{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 16px 16px 18px; }
-  .cmd{ font-family:"IBM Plex Mono",monospace; font-size:.86rem; line-height:1.5; color:var(--cream); word-break:break-all; flex:1; }
+  .cmd{ font-family:"IBM Plex Mono",monospace; font-size:.86rem; line-height:1.5; color:var(--ink); word-break:break-all; flex:1; }
   .cmd .pr{ color:var(--persimmon); user-select:none; }
   .copybtn{
-    flex:0 0 auto; background:var(--persimmon); color:#1a0f06; border:none; border-radius:8px;
+    flex:0 0 auto; background:var(--persimmon); color:#fff; border:none; border-radius:8px;
     font-family:"IBM Plex Mono",monospace; font-size:.66rem; letter-spacing:.14em; text-transform:uppercase; font-weight:500;
     padding:10px 16px; cursor:pointer; transition:filter .2s ease, background .2s ease;
   }
-  .copybtn:hover{ filter:brightness(1.08); }
-  .copybtn.copied{ background:var(--gold); }
-  .ctahint{ margin-top:15px; font-size:.85rem; color:rgb(var(--cream-rgb)/.46); }
-  .ctahint a{ color:rgb(var(--cream-rgb)/.7); }
+  .copybtn:hover{ filter:brightness(1.06); }
+  .copybtn.copied{ background:#3F8A4A; }
+  .ctahint{ margin-top:15px; font-size:.85rem; color:var(--mute); }
+  .ctahint a{ color:var(--ink2); }
 
   /* preview */
-  .preview{ margin:56px auto 0; max-width:760px; position:relative; }
-  .preview::after{
-    content:""; position:absolute; inset:-10% -4% -16% -4%; z-index:-1;
-    background:radial-gradient(50% 50% at 50% 45%, rgb(var(--persimmon-rgb)/.15), transparent 70%); filter:blur(8px);
+  .preview{ margin:52px auto 0; max-width:940px; position:relative; }
+  .preview img{
+    display:block; width:100%; height:auto; border-radius:18px;
+    box-shadow:0 40px 90px -36px rgba(120,60,10,.5), 0 0 0 1px rgb(var(--persimmon-rgb)/.08);
   }
-  /* menu-bar strip */
-  .barpreview{ max-width:440px; margin:0 auto 30px; }
-  .barpreview .bar{
-    border-radius:11px; overflow:hidden; border:1px solid rgb(var(--track-rgb)/.7);
-    box-shadow:0 16px 40px -22px rgba(0,0,0,.8);
-  }
-  .barpreview img{ display:block; width:100%; height:auto; }
-  .barpreview figcaption,.shots figcaption{
-    margin-top:11px; text-align:center; font-family:"IBM Plex Mono",monospace;
-    font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:rgb(var(--gold-rgb)/.8);
-  }
-  .barpreview figure{ margin:0; }
-  .shots{ display:flex; gap:22px; justify-content:center; align-items:flex-start; flex-wrap:wrap; }
-  .shots figure{ margin:0; flex:1 1 290px; max-width:330px; }
-  .shots img{
-    display:block; width:100%; height:auto; border-radius:14px;
-    box-shadow:0 30px 70px -28px rgba(0,0,0,.8), 0 0 0 1px rgb(var(--track-rgb)/.6);
-  }
-  .shots figcaption{
-    margin-top:13px; text-align:center; font-family:"IBM Plex Mono",monospace;
-    font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:rgb(var(--gold-rgb)/.8);
+  .preview figcaption{
+    margin-top:15px; text-align:center; font-family:"IBM Plex Mono",monospace;
+    font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:rgb(var(--persimmon-rgb)/.8);
   }
 
   /* footer */
-  footer{ flex-shrink:0; background:var(--ink-3); border-top:1px solid rgb(var(--track-rgb)/.6); padding:40px 0 38px; }
+  footer{ flex-shrink:0; border-top:1px solid rgb(var(--persimmon-rgb)/.12); padding:38px 0 36px; margin-top:64px; }
   footer .wrap{ display:flex; flex-direction:column; align-items:center; gap:13px; text-align:center; }
-  footer .kaji{ font-size:.92rem; color:rgb(var(--cream-rgb)/.62); max-width:48ch; }
-  footer .kaji a{ color:var(--gold); }
+  footer .kaji{ font-size:.92rem; color:var(--ink2); max-width:52ch; }
+  footer .kaji a{ color:var(--persimmon); }
   footer .flinks{ display:flex; gap:20px; flex-wrap:wrap; justify-content:center; }
-  footer .flinks a{ color:rgb(var(--cream-rgb)/.7); font-size:.88rem; }
-  footer .flinks a:hover{ color:var(--cream); text-decoration:none; }
-  footer .fine{ font-family:"IBM Plex Mono",monospace; font-size:.62rem; letter-spacing:.16em; text-transform:uppercase; color:rgb(var(--cream-rgb)/.34); margin-top:3px; }
+  footer .flinks a{ color:var(--ink2); font-size:.88rem; }
+  footer .flinks a:hover{ color:var(--persimmon); text-decoration:none; }
+  footer .fine{ font-family:"IBM Plex Mono",monospace; font-size:.62rem; letter-spacing:.16em; text-transform:uppercase; color:var(--mute); margin-top:3px; }
 
   @media (max-width:600px){
     .cmdrow{ flex-direction:column; align-items:stretch; }
@@ -152,13 +132,11 @@
   <div class="wrap">
     <a href="#top" class="brand">
       <svg viewBox="0 0 100 100" aria-hidden="true">
-        <circle cx="50" cy="50" r="30" fill="none" stroke="#3A3026" stroke-width="8"/>
+        <circle cx="50" cy="50" r="30" fill="none" stroke="#ECE2D0" stroke-width="8"/>
         <circle cx="50" cy="50" r="30" fill="none" stroke="#F25C05" stroke-width="8"
-                stroke-linecap="round" stroke-dasharray="160 188" transform="rotate(-90 50 50)"/>
-        <circle cx="50" cy="50" r="17" fill="none" stroke="#D8A657" stroke-width="5"
-                stroke-linecap="round" stroke-dasharray="66 107" transform="rotate(-90 50 50)"/>
-        <line x1="50" y1="50" x2="80" y2="20" stroke="#16100B" stroke-width="13" stroke-linecap="round"/>
-        <line x1="50" y1="50" x2="80" y2="20" stroke="#F25C05" stroke-width="8" stroke-linecap="round"/>
+                stroke-linecap="round" stroke-dasharray="150 188" transform="rotate(-90 50 50)"/>
+        <circle cx="50" cy="50" r="17" fill="none" stroke="#F25C05" stroke-width="5"
+                stroke-linecap="round" stroke-dasharray="66 107" transform="rotate(-90 50 50)" opacity=".5"/>
         <circle cx="50" cy="50" r="5" fill="#F25C05"/>
       </svg>
       <span class="name">Kaji <b>Gauge</b></span>
@@ -174,8 +152,9 @@
 <header class="hero" id="top">
   <div class="wrap">
     <span class="eyebrow">Native macOS · menu bar</span>
-    <h1>Know what's <span class="hl">left</span>.</h1>
-    <p class="lead">Your Claude and Codex quota — warm ring gauges in the menu bar. <b>Auto light &amp; dark</b>, read straight off your machine.</p>
+    <h1>A <span class="hl">beautiful</span> way to know what's left.</h1>
+    <p class="lead">Your Claude, Codex, MiniMax and Ark usage — warm ring gauges in the menu bar, a floating panel, and a dock that <b>folds to the screen edge</b>.</p>
+    <p class="leadzh">读本地、不联网，把 AI 额度安静地住进你的菜单栏。用量一眼看尽。</p>
 
     <div class="install">
       <div class="ihead">
@@ -189,31 +168,17 @@
     </div>
     <p class="ctahint">macOS 13+ · Apple Silicon · MIT · <a href="https://github.com/interesting-vibe-coding/kaji-gauge" target="_blank" rel="noopener">source on GitHub</a></p>
 
-    <div class="preview">
-      <figure class="barpreview">
-        <div class="bar">
-          <img src="https://raw.githubusercontent.com/interesting-vibe-coding/kaji-gauge/main/docs/menubar-color-dark.png" alt="Kaji Gauge sitting in the macOS menu bar" loading="lazy" />
-        </div>
-        <figcaption>Lives in your menu bar</figcaption>
-      </figure>
-      <div class="shots">
-        <figure>
-          <img src="https://raw.githubusercontent.com/interesting-vibe-coding/kaji-gauge/main/docs/gauge-dark.png" alt="Kaji Gauge — dark mode, ember gold rings" loading="lazy" />
-          <figcaption>Kaji Ember · night</figcaption>
-        </figure>
-        <figure>
-          <img src="https://raw.githubusercontent.com/interesting-vibe-coding/kaji-gauge/main/docs/gauge-light.png" alt="Kaji Gauge — light mode, persimmon rings" loading="lazy" />
-          <figcaption>Kaji Sun · day</figcaption>
-        </figure>
-      </div>
-    </div>
+    <figure class="preview">
+      <img src="https://raw.githubusercontent.com/interesting-vibe-coding/kaji-gauge/main/docs/hero.png" alt="Kaji Gauge — menu-bar rings, a floating popover, and a dock that folds to the screen edge" loading="lazy" />
+      <figcaption>One glance · 用量一眼看尽</figcaption>
+    </figure>
   </div>
 </header>
 </main>
 
 <footer>
   <div class="wrap">
-    <p class="kaji">Part of <a href="https://github.com/interesting-vibe-coding/kaji" target="_blank" rel="noopener">Kaji</a> — companion to the terminal that knows what your agents are doing.</p>
+    <p class="kaji">Part of <a href="https://github.com/interesting-vibe-coding/kaji" target="_blank" rel="noopener">Kaji</a> — companion to a macOS-native terminal built for AI-assisted work.</p>
     <div class="flinks">
       <a href="https://github.com/interesting-vibe-coding/kaji-gauge" target="_blank" rel="noopener">GitHub</a>
       <a href="https://github.com/interesting-vibe-coding/kaji-gauge/blob/main/LICENSE" target="_blank" rel="noopener">MIT</a>
